@@ -342,6 +342,7 @@ Public License instead of this License.
 
 package jscover.instrument;
 
+import com.google.debugging.sourcemap.SourceMapConsumerV3;
 import com.google.debugging.sourcemap.SourceMapping;
 import com.google.javascript.jscomp.CodePrinter;
 import com.google.javascript.jscomp.CompilerOptions;
@@ -439,6 +440,14 @@ class SourceProcessor {
 
         // TODO (FS) don't use uri but rather source map contents if source map given
         String jsLineInitialization = getJsLineInitialization(uri, instrumenter.getValidLines());
+
+        if (sourceMapping != null) {
+            SourceMapConsumerV3 consumer = (SourceMapConsumerV3) this.sourceMapping;
+            for (String file : consumer.getOriginalSources()) {
+                jsLineInitialization += getJsLineInitialization(file, instrumenter.getValidLines());
+            }
+        }
+
         if (commentsHandler.getJsCoverageIgnoreComments().size() > 0)
             jsLineInitialization += format("_$jscoverage['%s'].conditionals = [];\n", uri);
 

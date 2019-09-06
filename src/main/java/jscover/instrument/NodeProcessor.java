@@ -375,7 +375,7 @@ class NodeProcessor {
 
         Mapping.OriginalMapping mapping = sourceMapping.getMappingForLine(lineNumber, columnNumber);
         if (mapping == null || !mapping.hasOriginalFile()) {
-            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, new TreeSet<>());
+            return IR.empty();
         }
         //statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
         return statementBuilder.buildInstrumentationStatement(mapping.getLineNumber(), mapping.getOriginalFile(), new TreeSet<>());

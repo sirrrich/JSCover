@@ -530,9 +530,9 @@ class SourceProcessor {
         StringBuilder sb = new StringBuilder(format("if (! _$jscoverage['%s']) {\n", fileName));
         sb.append(format("  _$jscoverage['%s'] = {};\n", fileName));
         sb.append(format("  _$jscoverage['%s'].lineData = [];\n", fileName));
-        for (Integer line : validLines) {
+        /*for (Integer line : validLines) {
             sb.append(format(initLine, fileName, line));
-        }
+        }*/
         sb.append("}\n");
         return sb.toString();
     }

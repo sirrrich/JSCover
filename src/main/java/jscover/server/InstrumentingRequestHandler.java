@@ -466,6 +466,7 @@ public class InstrumentingRequestHandler extends HttpServer {
                     String originalJS = proxyService.getUrl(request);
                     SourceMapping sourceMapping = null;
                     try {
+                        // TODO (FS) read from file if present, if not try .map
                         String sourceMap = proxyService.getUrl(request, ".map");
                         sourceMapping = SourceMapConsumerFactory.parse(sourceMap);
                     } catch (Exception e) {

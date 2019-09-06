@@ -368,9 +368,11 @@ class StatementBuilder {
     }
 
     Node buildInstrumentationIncrementer(int lineNumber, String fileName, String identifier) {
+        return IR.exprResult(IR.call(IR.name("jscoverage_cover"), IR.string(fileName), IR.number(lineNumber)));
+/*
         Node getNumber = buildLineNumberExpression(lineNumber, fileName, identifier);
         Node inc = IR.inc(getNumber, true);
-        return IR.exprResult(inc);
+        return IR.exprResult(inc);*/
     }
 
     Node buildLineNumberExpression(int lineNumber, String fileName, String identifier) {

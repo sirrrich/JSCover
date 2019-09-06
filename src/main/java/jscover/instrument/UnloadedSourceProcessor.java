@@ -382,7 +382,7 @@ public class UnloadedSourceProcessor {
         logger.log(FINE, "Adding empty coverage for file: ''{0}'' URI: ''{1}''", new Object[]{file, uri});
         try {
             String source = ioUtils.loadFromFileSystem(file);
-            SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source);
+            SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source, null);
             sourceProcessor.instrumentSource();
             ScriptCoverageCount script = new ScriptCoverageCount("/"+uri, new ArrayList<>(
                     sourceProcessor.getInstrumenter().getValidLines()),

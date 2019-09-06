@@ -342,6 +342,7 @@ Public License instead of this License.
 
 package jscover.instrument;
 
+import com.google.debugging.sourcemap.SourceMapping;
 import com.google.javascript.rhino.Node;
 
 import java.util.SortedSet;
@@ -356,9 +357,9 @@ class ParseTreeInstrumenter implements NodeVisitor {
     private String fileName;
     private NodeProcessor nodeProcessor;
 
-    public ParseTreeInstrumenter(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler) {
+    public ParseTreeInstrumenter(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler, SourceMapping sourceMapping) {
         this.fileName = uri;
-        this.nodeProcessor = new NodeProcessor(uri, includeFunctionCoverage, commentsHandler);
+        this.nodeProcessor = new NodeProcessor(uri, includeFunctionCoverage, commentsHandler, sourceMapping);
     }
 
     public SortedSet<Integer> getValidLines() {

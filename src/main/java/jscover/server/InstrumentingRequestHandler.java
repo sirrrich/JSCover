@@ -342,6 +342,7 @@ Public License instead of this License.
 
 package jscover.server;
 
+import com.google.debugging.sourcemap.*;
 import jscover.Main;
 import jscover.instrument.InstrumenterService;
 import jscover.instrument.UnloadedSourceProcessor;
@@ -463,7 +464,14 @@ public class InstrumentingRequestHandler extends HttpServer {
                 String jsInstrumented;
                 if (configuration.isProxy()) {
                     String originalJS = proxyService.getUrl(request);
-                    jsInstrumented = instrumenterService.instrumentJSForProxyServer(configuration, originalJS, uri);
+                    SourceMapping sourceMapping = null;
+                    try {
+                        String sourceMap = proxyService.getUrl(request, ".map");
+                        sourceMapping = SourceMapConsumerFactory.parse(sourceMap);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    jsInstrumented = instrumenterService.instrumentJSForProxyServer(configuration, originalJS, uri, sourceMapping);
                     uris.put(uriFileTranslator.convertUriToFile(uri).substring(1), originalJS);
                 } else {
                     jsInstrumented = instrumenterService.instrumentJSForWebServer(configuration, new File(wwwRoot, uri), uri);
@@ -480,6 +488,7 @@ public class InstrumentingRequestHandler extends HttpServer {
             sendResponse(HTTP_STATUS.HTTP_FILE_NOT_FOUND,  MIME.TEXT_PLAIN, e.getMessage());
         } catch (Throwable e) {
             StringWriter stringWriter = new StringWriter();
+            e.printStackTrace();
             e.printStackTrace(new PrintWriter(stringWriter));
             sendResponse(HTTP_STATUS.HTTP_INTERNAL_SERVER_ERROR, MIME.TEXT_PLAIN, stringWriter.toString());
         }

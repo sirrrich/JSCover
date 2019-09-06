@@ -342,6 +342,7 @@ Public License instead of this License.
 
 package jscover.instrument;
 
+import com.google.debugging.sourcemap.SourceMapping;
 import com.google.javascript.jscomp.CodePrinter;
 import com.google.javascript.jscomp.CompilerOptions;
 import com.google.javascript.jscomp.SourceFile;
@@ -383,11 +384,12 @@ class SourceProcessor {
     private boolean includeFunctionCoverage;
     private boolean localStorage;
     private boolean isolateBrowser;
+    private SourceMapping sourceMapping;
 
-    public SourceProcessor(ConfigurationCommon config, String uri, String source) {
+    public SourceProcessor(ConfigurationCommon config, String uri, String source, SourceMapping sourceMapping) {
         this.uri = uri;
         this.source = source;
-        this.instrumenter = new ParseTreeInstrumenter(uri, config.isIncludeFunction(), commentsHandler);
+        this.instrumenter = new ParseTreeInstrumenter(uri, config.isIncludeFunction(), commentsHandler, sourceMapping);
         this.branchInstrumentor = new BranchInstrumentor(uri, config.isDetectCoalesce(), commentsHandler);
         this.config = ParserRunner.createConfig(config.getECMAVersion(), INCLUDE_DESCRIPTIONS_WITH_WHITESPACE, KEEP_GOING, null, false, Config.StrictMode.SLOPPY);
         this.options.setPreferSingleQuotes(true);
@@ -396,6 +398,7 @@ class SourceProcessor {
         this.includeFunctionCoverage = config.isIncludeFunction();
         this.localStorage = config.isLocalStorage();
         this.isolateBrowser = config.isolateBrowser();
+        this.sourceMapping = sourceMapping;
     }
 
     ParseTreeInstrumenter getInstrumenter() {
@@ -434,6 +437,7 @@ class SourceProcessor {
     protected String processSourceWithoutHeader(String sourceURI, String source) {
         String instrumentedSource = instrumentSource(sourceURI, source);
 
+        // TODO (FS) don't use uri but rather source map contents if source map given
         String jsLineInitialization = getJsLineInitialization(uri, instrumenter.getValidLines());
         if (commentsHandler.getJsCoverageIgnoreComments().size() > 0)
             jsLineInitialization += format("_$jscoverage['%s'].conditionals = [];\n", uri);

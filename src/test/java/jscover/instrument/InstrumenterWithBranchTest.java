@@ -364,13 +364,13 @@ public class InstrumenterWithBranchTest {
         given(config.getECMAVersion()).willReturn(Config.LanguageMode.ECMASCRIPT8);
         given(config.isIncludeBranch()).willReturn(true);
         given(config.isIncludeFunction()).willReturn(true);
-        sourceProcessor = new SourceProcessor(config, "test.js", "x;");
+        sourceProcessor = new SourceProcessor(config, "test.js", "x;", null);
     }
 
     @Test
     public void shouldInstrumentBranch() {
         String source = "var x = x || 7;" ;
-        sourceProcessor = new SourceProcessor(config, "test.js", source);
+        sourceProcessor = new SourceProcessor(config, "test.js", source, null);
         String instrumentedSource = sourceProcessor.instrumentSource(source);
         String expectedSource = "_$jscoverage['test.js'].branchData['1'][1].init(8, 6);\n" +
                 "function visit1_1_1(result) {\n" +

@@ -722,7 +722,7 @@ public class InstrumentingRequestHandlerTest {
 
         webServer.handleGet(request);
 
-        verify(instrumenterService).instrumentJSForProxyServer(configuration, "someJavaScript;", "/exclude/js/production.js");
+        verify(instrumenterService).instrumentJSForProxyServer(configuration, "someJavaScript;", "/exclude/js/production.js", null);
         verifyZeroInteractions(ioService);
         verifyZeroInteractions(jsonDataSaver);
         assertThat(InstrumentingRequestHandler.uris.size(), equalTo(1));

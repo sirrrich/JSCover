@@ -371,7 +371,7 @@ public class InstrumenterIntegrationTest {
     public void shouldInstrumentForFileSystem() {
         String fileName = "test-simple.js";
         String source = ioUtils.loadFromClassPath("/" + fileName);
-        instrumenter = new SourceProcessor(config, fileName, source);
+        instrumenter = new SourceProcessor(config, fileName, source, null);
 
         String instrumentedSource = instrumenter.processSourceForFileSystem();
 
@@ -385,7 +385,7 @@ public class InstrumenterIntegrationTest {
     public void shouldInstrumentForServer() {
         String fileName = "test-simple.js";
         String source = ioUtils.loadFromClassPath("/" + fileName);
-        instrumenter = new SourceProcessor(config, fileName, source);
+        instrumenter = new SourceProcessor(config, fileName, source, null);
 
         String instrumentedSource = instrumenter.processSourceForServer();
 

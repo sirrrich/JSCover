@@ -400,7 +400,7 @@ public class InstrumenterServiceTest {
 
     @Test
     public void shouldInstrumentForProxyServer() {
-        String jsInstrumented = service.instrumentJSForProxyServer(config, "x++;", "/src.js");
+        String jsInstrumented = service.instrumentJSForProxyServer(config, "x++;", "/src.js", null);
 
         assertThat(jsInstrumented, containsString("x++;"));
         assertThat(jsInstrumented, containsString("_$jscoverage['/src.js'].lineData[1]++;"));

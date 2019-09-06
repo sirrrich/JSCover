@@ -342,6 +342,9 @@ Public License instead of this License.
 
 package jscover.instrument;
 
+import com.google.debugging.sourcemap.SourceMapping;
+import com.google.debugging.sourcemap.proto.Mapping;
+import com.google.javascript.rhino.IR;
 import com.google.javascript.rhino.Node;
 
 import java.util.SortedSet;
@@ -355,15 +358,26 @@ class NodeProcessor {
     private String fileName;
     private boolean includeFunctionCoverage;
     private CommentsHandler commentsVisitor;
+    private SourceMapping sourceMapping;
 
-    public NodeProcessor(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler) {
+    public NodeProcessor(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler, SourceMapping sourceMapping) {
         this.fileName = uri;
         this.includeFunctionCoverage = includeFunctionCoverage;
         this.commentsVisitor = commentsHandler;
+        this.sourceMapping = sourceMapping;
     }
 
-    public Node buildInstrumentationStatement(int lineNumber) {
-        return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+    public Node buildInstrumentationStatement(int lineNumber, int columnNumber) {
+        // TODO (FS) validlines cache doesn't work anymore
+        if (sourceMapping == null || true) {
+            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+        }
+
+        Mapping.OriginalMapping mapping = sourceMapping.getMappingForLine(lineNumber, columnNumber);
+        if (mapping == null || !mapping.hasOriginalFile()) {
+            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+        }
+        return statementBuilder.buildInstrumentationStatement(mapping.getLineNumber(), mapping.getOriginalFile(), validLines);
     }
 
     // Function Coverage (HA-CA)
@@ -433,7 +447,8 @@ class NodeProcessor {
         } else if (node.isIf()) {
             addInstrumentationBefore(node);
         } else if (node.isAddedBlock() && node.getChildCount() == 0) {
-            node.addChildToFront(buildInstrumentationStatement(node.getLineno()));
+            // TODO (FS)
+            node.addChildToFront(buildInstrumentationStatement(node.getLineno(), 1));
         }
         return true;
     }
@@ -450,7 +465,7 @@ class NodeProcessor {
         } else if (parent.isImportStar()) {
         } else if (parent.isComputedProp()) {
         } else {
-            parent.addChildBefore(buildInstrumentationStatement(node.getLineno()), node);
+            parent.addChildBefore(buildInstrumentationStatement(node.getLineno(), node.getCharno() + 1), node);
         }
     }
     

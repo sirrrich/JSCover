@@ -370,7 +370,7 @@ public class InstrumenterTest {
         given(config.getECMAVersion()).willReturn(Config.LanguageMode.ECMASCRIPT8);
         given(config.isIncludeBranch()).willReturn(false);
         given(config.isIncludeFunction()).willReturn(true);
-        sourceProcessor = new SourceProcessor(config, "test.js", "x;");
+        sourceProcessor = new SourceProcessor(config, "test.js", "x;", null);
         instrumenter = (ParseTreeInstrumenter)ReflectionUtils.getField(sourceProcessor, "instrumenter");
     }
 

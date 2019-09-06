@@ -671,7 +671,7 @@ public class InstrumentAndHighlightRegressionTest {
         if (recordTest)
             tested.add(fileName);
         String source = ioUtils.loadFromClassPath("/data/" + dir + "/" + fileName);
-        SourceProcessor instrumenter = new SourceProcessor(config, fileName, source);
+        SourceProcessor instrumenter = new SourceProcessor(config, fileName, source, null);
 
         String instrumentedSource = instrumenter.processSourceWithoutHeader();
 

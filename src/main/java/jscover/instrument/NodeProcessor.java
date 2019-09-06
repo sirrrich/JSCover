@@ -369,15 +369,16 @@ class NodeProcessor {
 
     public Node buildInstrumentationStatement(int lineNumber, int columnNumber) {
         // TODO (FS) validlines cache doesn't work anymore
-        if (sourceMapping == null || true) {
-            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+        if (sourceMapping == null) {
+            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, new TreeSet<>());
         }
 
         Mapping.OriginalMapping mapping = sourceMapping.getMappingForLine(lineNumber, columnNumber);
         if (mapping == null || !mapping.hasOriginalFile()) {
-            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+            return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, new TreeSet<>());
         }
-        return statementBuilder.buildInstrumentationStatement(mapping.getLineNumber(), mapping.getOriginalFile(), validLines);
+        //statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+        return statementBuilder.buildInstrumentationStatement(mapping.getLineNumber(), mapping.getOriginalFile(), new TreeSet<>());
     }
 
     // Function Coverage (HA-CA)
@@ -439,7 +440,8 @@ class NodeProcessor {
                     && !parent.isName()
                     && !parent.isArrayLit()
                     && !parent.isAssign()
-                    && !isBooleanOperation(parent)) {
+                    && !isBooleanOperation(parent)
+                    && !parent.isReturn()) {
                 addInstrumentationBefore(node);
             }
         } else if (node.isReturn()) {
@@ -464,6 +466,8 @@ class NodeProcessor {
         } else if (parent.isImport()) {
         } else if (parent.isImportStar()) {
         } else if (parent.isComputedProp()) {
+        } else if (parent.isForIn()) {
+        } else if (parent.isForOf()) {
         } else {
             parent.addChildBefore(buildInstrumentationStatement(node.getLineno(), node.getCharno() + 1), node);
         }

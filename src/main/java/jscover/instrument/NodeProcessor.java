@@ -367,14 +367,16 @@ class NodeProcessor {
         this.sourceMapping = sourceMapping;
     }
 
-    public Node buildInstrumentationStatement(int lineNumber, int columnNumber) {
+    public Node buildInstrumentationStatement(Node node) {
+        int lineNumber = node.getLineno();
+        int columnNumber = node.getCharno() + 1;
         // TODO (FS) validlines cache doesn't work anymore
         if (sourceMapping == null) {
             return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, new TreeSet<>());
         }
 
         Mapping.OriginalMapping mapping = sourceMapping.getMappingForLine(lineNumber, columnNumber);
-        if (mapping == null || !mapping.hasOriginalFile()) {
+        if (mapping == null || !mapping.hasOriginalFile() || !mapping.hasLineNumber()) {
             return IR.empty();
         }
         //statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
@@ -450,7 +452,7 @@ class NodeProcessor {
             addInstrumentationBefore(node);
         } else if (node.isAddedBlock() && node.getChildCount() == 0) {
             // TODO (FS)
-            node.addChildToFront(buildInstrumentationStatement(node.getLineno(), 1));
+            node.addChildToFront(buildInstrumentationStatement(node));
         }
         return true;
     }
@@ -469,7 +471,7 @@ class NodeProcessor {
         } else if (parent.isForIn()) {
         } else if (parent.isForOf()) {
         } else {
-            parent.addChildBefore(buildInstrumentationStatement(node.getLineno(), node.getCharno() + 1), node);
+            parent.addChildBefore(buildInstrumentationStatement(node), node);
         }
     }
     

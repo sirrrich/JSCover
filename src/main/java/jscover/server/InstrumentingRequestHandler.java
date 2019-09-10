@@ -464,11 +464,11 @@ public class InstrumentingRequestHandler extends HttpServer {
                 String jsInstrumented;
                 if (configuration.isProxy()) {
                     String originalJS = proxyService.getUrl(request);
-                    SourceMapping sourceMapping = null;
+                    SourceMapConsumerV3 sourceMapping = null;
                     try {
                         // TODO (FS) read from file if present, if not try .map
                         String sourceMap = proxyService.getUrl(request, ".map");
-                        sourceMapping = SourceMapConsumerFactory.parse(sourceMap);
+                        sourceMapping = (SourceMapConsumerV3) SourceMapConsumerFactory.parse(sourceMap);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

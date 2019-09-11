@@ -351,6 +351,7 @@ import com.google.javascript.rhino.SimpleErrorReporter;
 import com.google.javascript.rhino.SimpleSourceFile;
 import com.google.javascript.rhino.StaticSourceFile;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import jscover.util.IoUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -671,7 +672,7 @@ public class InstrumentAndHighlightRegressionTest {
         if (recordTest)
             tested.add(fileName);
         String source = ioUtils.loadFromClassPath("/data/" + dir + "/" + fileName);
-        SourceProcessor instrumenter = new SourceProcessor(config, fileName, source, null);
+        SourceProcessor instrumenter = new SourceProcessor(config, fileName, source, new NoOpSourceMap(fileName));
 
         String instrumentedSource = instrumenter.processSourceWithoutHeader();
 

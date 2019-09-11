@@ -494,12 +494,14 @@ public class InstrumentingRequestHandler extends HttpServer {
             // TODO (FS) read from file if present, if not try .map
             // TODO (FS) ugly
             String sourceMapContent = proxyService.getUrl(request, ".map");
-            return new SourceMapV3(sourceMapContent);
+            if (sourceMapContent != null) {
+                return new SourceMapV3(sourceMapContent);
+            }
         } catch (Exception e) {
             logger.log(WARNING, "Source map not found at {0} for {1}", new Object[]{uri + ".map", uri});
             e.printStackTrace();
-            return new NoOpSourceMap(uri);
         }
+        return new NoOpSourceMap(uri);
     }
 
     @Override

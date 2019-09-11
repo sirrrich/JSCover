@@ -344,6 +344,7 @@ package jscover.instrument;
 
 import com.google.javascript.jscomp.parsing.Config;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import jscover.util.IoUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -371,7 +372,7 @@ public class InstrumenterIntegrationTest {
     public void shouldInstrumentForFileSystem() {
         String fileName = "test-simple.js";
         String source = ioUtils.loadFromClassPath("/" + fileName);
-        instrumenter = new SourceProcessor(config, fileName, source, null);
+        instrumenter = new SourceProcessor(config, fileName, source, new NoOpSourceMap(fileName));
 
         String instrumentedSource = instrumenter.processSourceForFileSystem();
 
@@ -385,7 +386,7 @@ public class InstrumenterIntegrationTest {
     public void shouldInstrumentForServer() {
         String fileName = "test-simple.js";
         String source = ioUtils.loadFromClassPath("/" + fileName);
-        instrumenter = new SourceProcessor(config, fileName, source, null);
+        instrumenter = new SourceProcessor(config, fileName, source, new NoOpSourceMap(fileName));
 
         String instrumentedSource = instrumenter.processSourceForServer();
 

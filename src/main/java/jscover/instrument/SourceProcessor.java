@@ -342,8 +342,6 @@ Public License instead of this License.
 
 package jscover.instrument;
 
-import com.google.debugging.sourcemap.SourceMapConsumerV3;
-import com.google.debugging.sourcemap.SourceMapping;
 import com.google.javascript.jscomp.CodePrinter;
 import com.google.javascript.jscomp.CompilerOptions;
 import com.google.javascript.jscomp.SourceFile;
@@ -526,9 +524,9 @@ class SourceProcessor {
         StringBuilder sb = new StringBuilder(format("if (! _$jscoverage['%s']) {\n", fileName));
         sb.append(format("  _$jscoverage['%s'] = {};\n", fileName));
         sb.append(format("  _$jscoverage['%s'].lineData = [];\n", fileName));
-        /*for (Integer line : validLines) {
+        for (Integer line : validLines) {
             sb.append(format(initLine, fileName, line));
-        }*/
+        }
         sb.append("}\n");
         return sb.toString();
     }

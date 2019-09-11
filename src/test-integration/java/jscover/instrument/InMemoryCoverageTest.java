@@ -345,6 +345,7 @@ package jscover.instrument;
 
 import com.google.javascript.jscomp.parsing.Config;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -353,9 +354,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mozilla.javascript.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 
@@ -392,7 +393,7 @@ public class InMemoryCoverageTest extends ScriptableObject {
         Scriptable scope = cx.initStandardObjects();
         String source = "function isNegative(x) {\n  if (x>=0)\n    return false;\n  else\n    return true;\n}; isNegative(12);";
 
-        processor = new SourceProcessor(config, "inMemory.js", source, null);
+        processor = new SourceProcessor(config, "inMemory.js", source, new NoOpSourceMap("inMemory.js"));
         String instrumentedJS = processor.processSource();
 
         Object expected = cx.evaluateString(scope, source, "inMemory.js", 1, null);
@@ -414,7 +415,7 @@ public class InMemoryCoverageTest extends ScriptableObject {
                         "};\n" +
                         "isNegative(12);";
 
-        processor = new SourceProcessor(config, "inMemory.js", source, null);
+        processor = new SourceProcessor(config, "inMemory.js", source, new NoOpSourceMap("inMemory.js"));
         String instrumentedJS = processor.processSource();
         instrumentedJS += "_$jscoverage;";
 

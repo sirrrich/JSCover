@@ -13,7 +13,6 @@ public class SourceMapV3 implements SourceMap {
     private final Map<String, SortedSet<Integer>> validLines = new HashMap<>();
     private final Map<String, Set<Integer>> instrumentedLinesBySourceFile = new HashMap<>();
 
-
     public SourceMapV3(String contents) throws SourceMapParseException {
         // at the moment only v3 is supported, thus we can safely cast to that
         // concrete implementation. We need it since the generic interface does
@@ -23,28 +22,23 @@ public class SourceMapV3 implements SourceMap {
         calculateValidLines();
     }
 
+    private void calculateValidLines() {
+        sourceMapping.visitMappings((sourceName, symbolName, sourceStartPosition, startPosition, endPosition) -> {
+            int line = sourceStartPosition.getLine();
+            validLines.computeIfAbsent(sourceName, newKey -> new TreeSet<>()).add(line);
+        });
+    }
+
     @Override
     public void markInstrumented(SourceLocation location) {
-        instrumentedLinesBySourceFile.merge(location.sourceFile, Collections.singleton(location.lineNumber), (set1, set2) -> {
-            set1.addAll(set2);
-            return set1;
-        });
+        instrumentedLinesBySourceFile.computeIfAbsent(location.sourceFile, newKey -> new TreeSet<>())
+                .add(location.lineNumber);
     }
 
     @Override
     public boolean hasBeenInstrumented(SourceLocation location) {
         return instrumentedLinesBySourceFile.getOrDefault(location.sourceFile, Collections.emptySet())
                 .contains(location.lineNumber);
-    }
-
-    private void calculateValidLines() {
-        sourceMapping.visitMappings((sourceName, symbolName, sourceStartPosition, startPosition, endPosition) -> {
-            int line = sourceStartPosition.getLine();
-            validLines.merge(sourceName, new TreeSet<>(Collections.singleton(line)), (set1, set2) -> {
-                set1.addAll(set2);
-                return set1;
-            });
-        });
     }
 
     @Override

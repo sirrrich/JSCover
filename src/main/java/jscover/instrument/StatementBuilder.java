@@ -344,15 +344,12 @@ package jscover.instrument;
 import com.google.javascript.rhino.IR;
 import com.google.javascript.rhino.Node;
 
-import java.util.SortedSet;
-
 
 class StatementBuilder {
 
-    public Node buildInstrumentationStatement(int lineNumber, String fileName, SortedSet<Integer> validLines) {
+    public Node buildInstrumentationStatement(int lineNumber, String fileName) {
         if (lineNumber < 1)
             throw new IllegalStateException("Illegal line number: " + lineNumber);
-        validLines.add(lineNumber);
         return buildInstrumentationIncrementer(lineNumber, fileName, "lineData");
     }
 
@@ -368,11 +365,9 @@ class StatementBuilder {
     }
 
     Node buildInstrumentationIncrementer(int lineNumber, String fileName, String identifier) {
-        return IR.exprResult(IR.call(IR.name("jscoverage_cover"), IR.string(fileName), IR.number(lineNumber)));
-/*
         Node getNumber = buildLineNumberExpression(lineNumber, fileName, identifier);
         Node inc = IR.inc(getNumber, true);
-        return IR.exprResult(inc);*/
+        return IR.exprResult(inc);
     }
 
     Node buildLineNumberExpression(int lineNumber, String fileName, String identifier) {

@@ -378,7 +378,7 @@ class NodeProcessor {
 
         sourceMap.markInstrumented(location);
         // TODO (FS) remove set
-        return statementBuilder.buildInstrumentationStatement(location.lineNumber, location.sourceFile, new TreeSet<>());
+        return statementBuilder.buildInstrumentationStatement(location.lineNumber, location.sourceFile);
     }
 
     // Function Coverage (HA-CA)

@@ -1,12 +1,3 @@
-function jscoverage_cover(file, line) {
-    var lineData = _$jscoverage[file].lineData;
-    if (!lineData[line]) {
-        lineData[line] = 1;
-    } else {
-        lineData[line]++;
-    }
-}
-
 function jscoverage_quote(s) {
     return '"' + s.replace(/[\u0000-\u001f"\\\u007f-\uffff]/g, function (c) {
         switch (c) {

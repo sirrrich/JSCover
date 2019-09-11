@@ -364,8 +364,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.*;
 
 public class InstrumentingRequestHandler extends HttpServer {
     private static final Logger logger = Logger.getLogger(InstrumentingRequestHandler.class.getName());
@@ -466,14 +465,7 @@ public class InstrumentingRequestHandler extends HttpServer {
                 String jsInstrumented;
                 if (configuration.isProxy()) {
                     String originalJS = proxyService.getUrl(request);
-                    SourceMap sourceMap = new NoOpSourceMap(uri);
-                    try {
-                        // TODO (FS) read from file if present, if not try .map
-                        String sourceMapContent = proxyService.getUrl(request, ".map");
-                        sourceMap = new SourceMapV3(sourceMapContent);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    SourceMap sourceMap = createSourceMap(request, uri);
                     jsInstrumented = instrumenterService.instrumentJSForProxyServer(configuration, originalJS, uri, sourceMap);
                     uris.put(uriFileTranslator.convertUriToFile(uri).substring(1), originalJS);
                 } else {
@@ -494,6 +486,19 @@ public class InstrumentingRequestHandler extends HttpServer {
             e.printStackTrace();
             e.printStackTrace(new PrintWriter(stringWriter));
             sendResponse(HTTP_STATUS.HTTP_INTERNAL_SERVER_ERROR, MIME.TEXT_PLAIN, stringWriter.toString());
+        }
+    }
+
+    private SourceMap createSourceMap(HttpRequest request, String uri) {
+        try {
+            // TODO (FS) read from file if present, if not try .map
+            // TODO (FS) ugly
+            String sourceMapContent = proxyService.getUrl(request, ".map");
+            return new SourceMapV3(sourceMapContent);
+        } catch (Exception e) {
+            logger.log(WARNING, "Source map not found at {0} for {1}", new Object[]{uri + ".map", uri});
+            e.printStackTrace();
+            return new NoOpSourceMap(uri);
         }
     }
 

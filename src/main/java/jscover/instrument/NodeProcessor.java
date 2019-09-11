@@ -373,7 +373,7 @@ class NodeProcessor {
 
         SourceLocation location = sourceMap.translate(fileName, lineNumber, columnNumber);
         if (location == null || sourceMap.hasBeenInstrumented(location)) {
-            return IR.empty();
+            return null;
         }
 
         sourceMap.markInstrumented(location);
@@ -449,8 +449,10 @@ class NodeProcessor {
         } else if (node.isIf()) {
             addInstrumentationBefore(node);
         } else if (node.isAddedBlock() && node.getChildCount() == 0) {
-            // TODO (FS)
-            node.addChildToFront(buildInstrumentationStatement(node));
+            Node instrumentationStatement = buildInstrumentationStatement(node);
+            if (instrumentationStatement != null) {
+                node.addChildToFront(instrumentationStatement);
+            }
         }
         return true;
     }
@@ -469,7 +471,10 @@ class NodeProcessor {
         } else if (parent.isForIn()) {
         } else if (parent.isForOf()) {
         } else {
-            parent.addChildBefore(buildInstrumentationStatement(node), node);
+            Node instrumentationStatement = buildInstrumentationStatement(node);
+           if (instrumentationStatement != null) {
+               parent.addChildBefore(instrumentationStatement, node);
+           }
         }
     }
 

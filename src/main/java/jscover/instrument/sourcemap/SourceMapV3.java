@@ -5,15 +5,12 @@ import com.google.debugging.sourcemap.SourceMapConsumerV3;
 import com.google.debugging.sourcemap.SourceMapParseException;
 import com.google.debugging.sourcemap.proto.Mapping;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SourceMapV3 implements SourceMap {
 
     private final SourceMapConsumerV3 sourceMapping;
-    private final Map<String, Set<Integer>> validLines = new HashMap<>();
+    private final Map<String, SortedSet<Integer>> validLines = new HashMap<>();
     private final Map<String, Set<Integer>> instrumentedLinesBySourceFile = new HashMap<>();
 
 
@@ -43,7 +40,7 @@ public class SourceMapV3 implements SourceMap {
     private void calculateValidLines() {
         sourceMapping.visitMappings((sourceName, symbolName, sourceStartPosition, startPosition, endPosition) -> {
             int line = sourceStartPosition.getLine();
-            validLines.merge(sourceName, Collections.singleton(line), (set1, set2) -> {
+            validLines.merge(sourceName, new TreeSet<>(Collections.singleton(line)), (set1, set2) -> {
                 set1.addAll(set2);
                 return set1;
             });
@@ -51,7 +48,7 @@ public class SourceMapV3 implements SourceMap {
     }
 
     @Override
-    public Set<Integer> getValidLines(String sourceFileName) {
+    public SortedSet<Integer> getValidLines(String sourceFileName) {
         return validLines.get(sourceFileName);
     }
 
@@ -64,4 +61,8 @@ public class SourceMapV3 implements SourceMap {
         return new SourceLocation(mapping);
     }
 
+    @Override
+    public List<String> getOriginalSourceFiles() {
+        return new ArrayList<>(sourceMapping.getOriginalSources());
+    }
 }

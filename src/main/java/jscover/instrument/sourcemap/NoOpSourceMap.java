@@ -1,16 +1,18 @@
 package jscover.instrument.sourcemap;
 
-import com.google.debugging.sourcemap.proto.Mapping;
-
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class NoOpSourceMap implements SourceMap {
 
-    private final Set<Integer> instrumentedLines = new HashSet<>();
+    private final SortedSet<Integer> instrumentedLines = new TreeSet<>();
+    private final String sourceFile;
+
+    public NoOpSourceMap(String sourceFile) {
+        this.sourceFile = sourceFile;
+    }
 
     @Override
-    public Set<Integer> getValidLines(String sourceFileName) {
+    public SortedSet<Integer> getValidLines(String sourceFileName) {
         return instrumentedLines;
     }
 
@@ -29,4 +31,8 @@ public class NoOpSourceMap implements SourceMap {
         return instrumentedLines.contains(location.lineNumber);
     }
 
+    @Override
+    public List<String> getOriginalSourceFiles() {
+        return Collections.singletonList(sourceFile);
+    }
 }

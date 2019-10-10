@@ -24,7 +24,7 @@ public class SourceMapV3 implements SourceMap {
 
     private void calculateValidLines() {
         sourceMapping.visitMappings((sourceName, symbolName, sourceStartPosition, startPosition, endPosition) -> {
-            int line = sourceStartPosition.getLine();
+            int line = sourceStartPosition.getLine() + 1;
             validLines.computeIfAbsent(sourceName, newKey -> new TreeSet<>()).add(line);
         });
     }

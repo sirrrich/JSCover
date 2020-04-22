@@ -344,6 +344,7 @@ package jscover.instrument;
 
 import com.google.javascript.jscomp.parsing.Config;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import jscover.util.IoUtils;
 import jscover.util.ReflectionUtils;
 import org.junit.Before;
@@ -370,7 +371,7 @@ public class SourceProcessorTest {
     @Before
     public void setUp() {
         given(config.getECMAVersion()).willReturn(Config.LanguageMode.ECMASCRIPT8);
-        sourceProcessor = new SourceProcessor(config, "test.js", "x;");
+        sourceProcessor = new SourceProcessor(config, "test.js", "x;", new NoOpSourceMap("test.js"));
         ReflectionUtils.setField(sourceProcessor, "ioUtils", ioUtils);
     }
 

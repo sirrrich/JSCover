@@ -344,6 +344,7 @@ package jscover.instrument;
 
 import com.google.javascript.jscomp.parsing.Config;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import jscover.server.UriNotFound;
 import jscover.util.IoUtils;
 import org.junit.Before;
@@ -400,7 +401,7 @@ public class InstrumenterServiceTest {
 
     @Test
     public void shouldInstrumentForProxyServer() {
-        String jsInstrumented = service.instrumentJSForProxyServer(config, "x++;", "/src.js");
+        String jsInstrumented = service.instrumentJSForProxyServer(config, "x++;", "/src.js", new NoOpSourceMap("/src.js"));
 
         assertThat(jsInstrumented, containsString("x++;"));
         assertThat(jsInstrumented, containsString("_$jscoverage['/src.js'].lineData[1]++;"));

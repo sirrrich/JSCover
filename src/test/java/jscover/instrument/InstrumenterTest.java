@@ -344,6 +344,7 @@ package jscover.instrument;
 
 import com.google.javascript.jscomp.parsing.Config;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import jscover.util.ReflectionUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -370,7 +371,7 @@ public class InstrumenterTest {
         given(config.getECMAVersion()).willReturn(Config.LanguageMode.ECMASCRIPT8);
         given(config.isIncludeBranch()).willReturn(false);
         given(config.isIncludeFunction()).willReturn(true);
-        sourceProcessor = new SourceProcessor(config, "test.js", "x;");
+        sourceProcessor = new SourceProcessor(config, "test.js", "x;", new NoOpSourceMap("test.js"));
         instrumenter = (ParseTreeInstrumenter)ReflectionUtils.getField(sourceProcessor, "instrumenter");
     }
 
@@ -616,19 +617,21 @@ public class InstrumenterTest {
                 "  }";
         String instrumentedSource = sourceProcessor.instrumentSource(source);
         String expectedSource = "_$jscoverage['test.js'].lineData[1]++;\n" +
-                "var x = a > b ? function() {\n" +
+                "var x = a > b ? (_$jscoverage['test.js'].lineData[2]++, function() {\n" +
                 "  _$jscoverage['test.js'].functionData[0]++;\n" +
                 "  _$jscoverage['test.js'].lineData[3]++;\n" +
                 "  return true;\n" +
-                "} : function() {\n" +
+                "}) : (_$jscoverage['test.js'].lineData[4]++, function() {\n" +
                 "  _$jscoverage['test.js'].functionData[1]++;\n" +
                 "  _$jscoverage['test.js'].lineData[5]++;\n" +
                 "  return false;\n" +
-                "};\n";
+                "});\n";
         assertEquals(expectedSource, instrumentedSource);
-        assertThat(instrumenter.getValidLines().size(), equalTo(3));
+        assertThat(instrumenter.getValidLines().size(), equalTo(6));
         assertThat(instrumenter.getValidLines(), hasItem(1));
+		assertThat(instrumenter.getValidLines(), hasItem(2));
         assertThat(instrumenter.getValidLines(), hasItem(3));
+		assertThat(instrumenter.getValidLines(), hasItem(4));
         assertThat(instrumenter.getValidLines(), hasItem(5));
     }
 

@@ -382,7 +382,7 @@ public class LCovGeneratorTest {
         FileData coverageData = new FileData("/test.js", lines, functions, branches);
 
         String result = lCovGenerator.generateRecord(coverageData, "dest");
-        String expected = "SF:dest/test.js\n" +
+        String expected = "SF:dest//test.js\n" +
                 "FNDA:7,0\n" +
                 "FNDA:2,1\n" +
                 "FNDA:0,2\n" +

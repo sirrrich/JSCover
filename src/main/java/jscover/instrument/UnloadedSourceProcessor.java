@@ -343,6 +343,7 @@ Public License instead of this License.
 package jscover.instrument;
 
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import jscover.report.ScriptCoverageCount;
 import jscover.util.FileScanner;
 import jscover.util.IoUtils;
@@ -382,7 +383,7 @@ public class UnloadedSourceProcessor {
         logger.log(FINE, "Adding empty coverage for file: ''{0}'' URI: ''{1}''", new Object[]{file, uri});
         try {
             String source = ioUtils.loadFromFileSystem(file);
-            SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source);
+            SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source, new NoOpSourceMap(uri));
             sourceProcessor.instrumentSource();
             ScriptCoverageCount script = new ScriptCoverageCount("/"+uri, new ArrayList<>(
                     sourceProcessor.getInstrumenter().getValidLines()),

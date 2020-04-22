@@ -348,16 +348,13 @@ import com.google.javascript.rhino.Node;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 public class StatementBuilderTest {
     private StatementBuilder builder = new StatementBuilder();
     private CompilerOptions options = new CompilerOptions();
-    private SortedSet<Integer> validLines = new TreeSet<>();
 
     @Before
     public void setUp() {
@@ -366,7 +363,7 @@ public class StatementBuilderTest {
 
     @Test
     public void shouldBuildInstrumentationIncrementer() {
-        Node statement = builder.buildInstrumentationIncrementer(7, "/dir/file.js", "lineData");
+        Node statement = builder.buildInstrumentationIncrementer(7, "/dir/file.js", "lineData",true);
         assertThat(new CodePrinter.Builder(statement).setCompilerOptions(options).build(), equalTo("_$jscoverage['/dir/file.js'].lineData[7]++"));
     }
 
@@ -378,14 +375,13 @@ public class StatementBuilderTest {
 
     @Test
     public void shouldCreateInstrumentationStatement() {
-        Node statement = builder.buildInstrumentationStatement(7, "/dir/file.js", validLines);
+        Node statement = builder.buildInstrumentationStatement(7, "/dir/file.js",true);
         assertThat(new CodePrinter.Builder(statement).setCompilerOptions(options).build(), equalTo("_$jscoverage['/dir/file.js'].lineData[7]++"));
-        assertThat(validLines, hasItem(7));
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionIfLineNumberInvalid() {
-        builder.buildInstrumentationStatement(0, "/dir/file.js", validLines);
+        builder.buildInstrumentationStatement(0, "/dir/file.js",true);
     }
 
     @Test

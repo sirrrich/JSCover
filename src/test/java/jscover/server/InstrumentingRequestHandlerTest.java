@@ -345,6 +345,7 @@ package jscover.server;
 import jscover.Main;
 import jscover.instrument.InstrumenterService;
 import jscover.instrument.UnloadedSourceProcessor;
+import jscover.instrument.sourcemap.SourceMap;
 import jscover.report.JSONDataSaver;
 import jscover.report.ScriptCoverageCount;
 import jscover.util.IoService;
@@ -719,10 +720,11 @@ public class InstrumentingRequestHandlerTest {
         HttpRequest request = new HttpRequest(uri, null, null, 0, null);
         given(proxyService.getUrl(request)).willReturn("someJavaScript;");
         given(uriFileTranslator.convertUriToFile("/exclude/js/production.js")).willReturn("/js/production.js");
+        given(instrumenterService.instrumentJSForProxyServer(any(), any(), any(), any())).willReturn("");
 
         webServer.handleGet(request);
 
-        verify(instrumenterService).instrumentJSForProxyServer(configuration, "someJavaScript;", "/exclude/js/production.js");
+        verify(instrumenterService).instrumentJSForProxyServer(eq(configuration), eq("someJavaScript;"), eq("/exclude/js/production.js"), any(SourceMap.class));
         verifyNoInteractions(ioService);
         verifyNoInteractions(jsonDataSaver);
         assertThat(InstrumentingRequestHandler.uris.size(), equalTo(1));

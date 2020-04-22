@@ -344,6 +344,7 @@ package jscover.instrument;
 
 import com.google.javascript.jscomp.parsing.Config;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -364,13 +365,13 @@ public class InstrumenterWithBranchTest {
         given(config.getECMAVersion()).willReturn(Config.LanguageMode.ECMASCRIPT8);
         given(config.isIncludeBranch()).willReturn(true);
         given(config.isIncludeFunction()).willReturn(true);
-        sourceProcessor = new SourceProcessor(config, "test.js", "x;");
+        sourceProcessor = new SourceProcessor(config, "test.js", "x;", new NoOpSourceMap("test.js"));
     }
 
     @Test
     public void shouldInstrumentBranch() {
         String source = "var x = x || 7;" ;
-        sourceProcessor = new SourceProcessor(config, "test.js", source);
+        sourceProcessor = new SourceProcessor(config, "test.js", source, new NoOpSourceMap("test.js"));
         String instrumentedSource = sourceProcessor.instrumentSource(source);
         String expectedSource = "_$jscoverage['test.js'].branchData['1'][1].init(8, 6);\n" +
                 "function visit1_1_1(result) {\n" +

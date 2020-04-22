@@ -492,6 +492,14 @@ public class ProxyService {
         return ioUtils.toString(conn.getInputStream());
     }
 
+    public String getUrl(HttpRequest request, String suffix) throws IOException {
+        URL url = request.getUrl();
+        URL newUrl = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getPath() + suffix);
+        HttpURLConnection conn = (HttpURLConnection) newUrl.openConnection();
+        copyHeadersExceptEncoding(request, conn);
+        return ioUtils.toString(conn.getInputStream());
+    }
+
     void copyHeadersExceptEncoding(HttpRequest request, HttpURLConnection conn) {
         Map<String, List<String>> clientHeaders = request.getHeaders();
         if (clientHeaders != null) {

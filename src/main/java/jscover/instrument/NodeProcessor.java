@@ -342,7 +342,11 @@ Public License instead of this License.
 
 package jscover.instrument;
 
+import com.google.javascript.jscomp.NodeUtil;
+import com.google.javascript.rhino.IR;
 import com.google.javascript.rhino.Node;
+import jscover.instrument.sourcemap.SourceLocation;
+import jscover.instrument.sourcemap.SourceMap;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -355,15 +359,27 @@ class NodeProcessor {
     private String fileName;
     private boolean includeFunctionCoverage;
     private CommentsHandler commentsVisitor;
+    private SourceMap sourceMap;
 
-    public NodeProcessor(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler) {
+    public NodeProcessor(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler, SourceMap sourceMap) {
         this.fileName = uri;
         this.includeFunctionCoverage = includeFunctionCoverage;
         this.commentsVisitor = commentsHandler;
+        this.sourceMap = sourceMap;
     }
 
-    public Node buildInstrumentationStatement(int lineNumber) {
-        return statementBuilder.buildInstrumentationStatement(lineNumber, fileName, validLines);
+    public Node buildInstrumentationStatement(Node node, boolean expression) {
+        int lineNumber = node.getLineno();
+        int columnNumber = node.getCharno() + 1;
+
+        SourceLocation location = sourceMap.translate(fileName, lineNumber, columnNumber);
+        if (location == null || sourceMap.hasBeenInstrumented(location)) {
+            return null;
+        }
+
+        sourceMap.markInstrumented(location);
+        // TODO (FS) remove set
+		return statementBuilder.buildInstrumentationStatement(location.lineNumber, location.sourceFile,expression);
     }
 
     // Function Coverage (HA-CA)
@@ -381,8 +397,8 @@ class NodeProcessor {
             block.addChildToFront(buildFunctionInstrumentationStatement(functionNumber++));
         }
 
-        if (validLines.contains(node.getLineno()) || commentsVisitor.ignoreLine(node.getLineno())) {
-            // Don't add instrumentation if already there or we're ignoring
+        if (commentsVisitor.ignoreLine(node.getLineno())) {
+            // Don't add instrumentation if we're ignoring
             return true;
         }
 
@@ -434,8 +450,32 @@ class NodeProcessor {
         } else if (node.isIf()) {
             addInstrumentationBefore(node);
         } else if (node.isAddedBlock() && node.getChildCount() == 0) {
-            node.addChildToFront(buildInstrumentationStatement(node.getLineno()));
+            Node instrumentationStatement = buildInstrumentationStatement(node,true);
+            if (instrumentationStatement != null) {
+                node.addChildToFront(instrumentationStatement);
+            }
         }
+		if(node.isHook()) {
+			// https://www.programcreek.com/java-api-examples/index.php@source_dir=flex-blazeds-master/modules/core/src/flex/messaging/cluster/?class=com.google.javascript.rhino.IR&method=assign
+			Node instrumentationStatement = buildInstrumentationStatement(node.getSecondChild(),false);
+			if (instrumentationStatement != null) {
+				node.getSecondChild().replaceWith(IR.comma(instrumentationStatement, node.getSecondChild().cloneTree()));//.useSourceInfoIfMissingFromForTree(node.getSecondChild()));
+			}
+			instrumentationStatement = buildInstrumentationStatement(node.getChildAtIndex(2),false);
+			if (instrumentationStatement != null) {
+				node.getChildAtIndex(2).replaceWith(IR.comma(instrumentationStatement, node.getChildAtIndex(2).cloneTree()));//.useSourceInfoIfMissingFromForTree(node.getChildAtIndex(2)));
+			}
+		}
+		if(node.isComma()) {
+			Node instrumentationStatement = buildInstrumentationStatement(node.getFirstChild(),false);
+			if (instrumentationStatement != null) {
+				node.getFirstChild().replaceWith(IR.comma(instrumentationStatement, node.getFirstChild().cloneTree()));//.useSourceInfoIfMissingFromForTree(node.getSecondChild()));
+			}
+			instrumentationStatement = buildInstrumentationStatement(node.getSecondChild(),false);
+			if (instrumentationStatement != null) {
+				node.getSecondChild().replaceWith(IR.comma(instrumentationStatement, node.getSecondChild().cloneTree()));//.useSourceInfoIfMissingFromForTree(node.getChildAtIndex(2)));
+			}
+		}
         return true;
     }
 
@@ -453,7 +493,10 @@ class NodeProcessor {
         } else if (parent.isImportStar()) {
         } else if (parent.isComputedProp()) {
         } else {
-            parent.addChildBefore(buildInstrumentationStatement(node.getLineno()), node);
+            Node instrumentationStatement = buildInstrumentationStatement(node,true);
+           if (instrumentationStatement != null) {
+               parent.addChildBefore(instrumentationStatement, node);
+           }
         }
     }
     

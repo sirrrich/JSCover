@@ -345,6 +345,9 @@ package jscover.server;
 import jscover.Main;
 import jscover.instrument.InstrumenterService;
 import jscover.instrument.UnloadedSourceProcessor;
+import jscover.instrument.sourcemap.NoOpSourceMap;
+import jscover.instrument.sourcemap.SourceMap;
+import jscover.instrument.sourcemap.SourceMapV3;
 import jscover.report.JSONDataSaver;
 import jscover.report.ScriptCoverageCount;
 import jscover.util.IoService;
@@ -361,8 +364,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.*;
 
 public class InstrumentingRequestHandler extends HttpServer {
     private static final Logger logger = Logger.getLogger(InstrumentingRequestHandler.class.getName());
@@ -463,7 +465,8 @@ public class InstrumentingRequestHandler extends HttpServer {
                 String jsInstrumented;
                 if (configuration.isProxy()) {
                     String originalJS = proxyService.getUrl(request);
-                    jsInstrumented = instrumenterService.instrumentJSForProxyServer(configuration, originalJS, uri);
+					SourceMap sourceMap = createSourceMap(request, uri);
+                    jsInstrumented = instrumenterService.instrumentJSForProxyServer(configuration, originalJS, uri, sourceMap);
                     uris.put(uriFileTranslator.convertUriToFile(uri).substring(1), originalJS);
                 } else {
                     jsInstrumented = instrumenterService.instrumentJSForWebServer(configuration, new File(wwwRoot, uri), uri);
@@ -485,6 +488,22 @@ public class InstrumentingRequestHandler extends HttpServer {
         }
     }
 
+	private SourceMap createSourceMap(HttpRequest request, String uri) {
+        try {
+            // TODO (FS) read from file if present, if not try .map
+            // TODO (FS) ugly
+            String sourceMapContent = proxyService.getUrl(request, ".map");
+            if (sourceMapContent != null) {
+                return new SourceMapV3(sourceMapContent);
+            }
+        } catch (Exception e) {
+            logger.log(WARNING, "Source map not found at {0} for {1}", new Object[]{uri + ".map", uri});
+            e.printStackTrace();
+        }
+        return new NoOpSourceMap(uri);
+    }
+
+	
     @Override
     protected void handleOther(String httpMethod, HttpRequest request) {
         if (configuration.isProxy())

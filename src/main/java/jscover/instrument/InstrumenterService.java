@@ -343,6 +343,8 @@ Public License instead of this License.
 package jscover.instrument;
 
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.NoOpSourceMap;
+import jscover.instrument.sourcemap.SourceMap;
 import jscover.server.UriNotFound;
 import jscover.util.IoUtils;
 
@@ -357,27 +359,30 @@ public class InstrumenterService {
     private static final Logger logger = Logger.getLogger(InstrumenterService.class.getName());
     private IoUtils ioUtils = IoUtils.getInstance();
 
+    // TODO (FS) also use source map here?
     public String instrumentJSForWebServer(ConfigurationCommon config, File srcFile, String uri) {
         logger.log(INFO, "Instrumenting {0}", uri);
         try {
             String source = ioUtils.toString(new FileInputStream(srcFile));
-            SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source);
+            SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source, new NoOpSourceMap(uri));
             return sourceProcessor.processSourceForServer();
         } catch (FileNotFoundException e) {
-            throw new UriNotFound("Couldn't find "+uri, e);
+            throw new UriNotFound("Couldn't find " + uri, e);
         }
     }
 
-    public String instrumentJSForProxyServer(ConfigurationCommon config, String source, String uri) {
+    public String instrumentJSForProxyServer(ConfigurationCommon config, String source, String uri, SourceMap sourceMap) {
         logger.log(INFO, "Instrumenting {0}", uri);
-        SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source);
+        SourceProcessor sourceProcessor = new SourceProcessor(config, uri, source, sourceMap);
         return sourceProcessor.processSourceForServer();
     }
 
+    // TODO (FS) also use source map here?
     public void instrumentJSForFileSystem(ConfigurationCommon config, File srcFile, File dest, String uri) {
         logger.log(INFO, "Instrumenting {0}", uri);
         String source = ioUtils.loadFromFileSystem(srcFile);
-        SourceProcessor sourceProcessor = new SourceProcessor(config, "/" + uri, source);
+		String fixedUri = "/" + uri;
+        SourceProcessor sourceProcessor = new SourceProcessor(config, fixedUri, source, new NoOpSourceMap(fixedUri));
         String jsInstrumented = sourceProcessor.processSourceForFileSystem();
         ioUtils.copy(jsInstrumented, dest);
     }

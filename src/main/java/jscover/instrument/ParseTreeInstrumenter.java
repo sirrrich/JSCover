@@ -342,9 +342,12 @@ Public License instead of this License.
 
 package jscover.instrument;
 
+import com.google.debugging.sourcemap.SourceMapping;
 import com.google.javascript.rhino.Node;
+import jscover.instrument.sourcemap.SourceMap;
 
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
@@ -354,15 +357,18 @@ import static java.util.logging.Level.SEVERE;
 class ParseTreeInstrumenter implements NodeVisitor {
     private static Logger logger = Logger.getLogger(ParseTreeInstrumenter.class.getName());
     private String fileName;
+	private SourceMap sourceMap;
     private NodeProcessor nodeProcessor;
 
-    public ParseTreeInstrumenter(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler) {
+    public ParseTreeInstrumenter(String uri, boolean includeFunctionCoverage, CommentsHandler commentsHandler, SourceMap sourceMap) {
         this.fileName = uri;
-        this.nodeProcessor = new NodeProcessor(uri, includeFunctionCoverage, commentsHandler);
+        this.sourceMap = sourceMap;
+        this.nodeProcessor = new NodeProcessor(uri, includeFunctionCoverage, commentsHandler, sourceMap);
     }
 
     public SortedSet<Integer> getValidLines() {
-        return nodeProcessor.getValidLines();
+        // TODO (FS) doesn't make sense in the source mapped scenario. only for testing. change tests later
+        return new TreeSet<>(sourceMap.getValidLines(null));
     }
 
 	// Function Coverage (HA-CA)

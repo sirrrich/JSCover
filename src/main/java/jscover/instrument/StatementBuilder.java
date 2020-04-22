@@ -344,20 +344,17 @@ package jscover.instrument;
 import com.google.javascript.rhino.IR;
 import com.google.javascript.rhino.Node;
 
-import java.util.SortedSet;
-
 
 class StatementBuilder {
 
-    public Node buildInstrumentationStatement(int lineNumber, String fileName, SortedSet<Integer> validLines) {
+    public Node buildInstrumentationStatement(int lineNumber, String fileName, boolean expression) {
         if (lineNumber < 1)
             throw new IllegalStateException("Illegal line number: " + lineNumber);
-        validLines.add(lineNumber);
-        return buildInstrumentationIncrementer(lineNumber, fileName, "lineData");
+        return buildInstrumentationIncrementer(lineNumber, fileName, "lineData",expression);
     }
 
     public Node buildFunctionInstrumentationStatement(int lineNumber, String fileName) {
-        return buildInstrumentationIncrementer(lineNumber, fileName, "functionData");
+        return buildInstrumentationIncrementer(lineNumber, fileName, "functionData",true);
     }
 
     public Node buildConditionalStatement(int startLine, int endLine, String fileName) {
@@ -367,10 +364,13 @@ class StatementBuilder {
         return IR.exprResult(assignment);
     }
 
-    Node buildInstrumentationIncrementer(int lineNumber, String fileName, String identifier) {
+    Node buildInstrumentationIncrementer(int lineNumber, String fileName, String identifier,boolean expression) {
         Node getNumber = buildLineNumberExpression(lineNumber, fileName, identifier);
         Node inc = IR.inc(getNumber, true);
-        return IR.exprResult(inc);
+		if(expression)
+			return IR.exprResult(inc);
+		else
+			return inc;
     }
 
     Node buildLineNumberExpression(int lineNumber, String fileName, String identifier) {

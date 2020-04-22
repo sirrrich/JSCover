@@ -351,6 +351,7 @@ import com.google.javascript.rhino.ErrorReporter;
 import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.StaticSourceFile;
 import jscover.ConfigurationCommon;
+import jscover.instrument.sourcemap.SourceMap;
 import jscover.util.IoUtils;
 
 import java.util.List;
@@ -383,11 +384,12 @@ class SourceProcessor {
     private boolean includeFunctionCoverage;
     private boolean localStorage;
     private boolean isolateBrowser;
+    private final SourceMap sourceMap;
 
-    public SourceProcessor(ConfigurationCommon config, String uri, String source) {
+    public SourceProcessor(ConfigurationCommon config, String uri, String source, SourceMap sourceMap) {
         this.uri = uri;
         this.source = source;
-        this.instrumenter = new ParseTreeInstrumenter(uri, config.isIncludeFunction(), commentsHandler);
+        this.instrumenter = new ParseTreeInstrumenter(uri, config.isIncludeFunction(), commentsHandler, sourceMap);
         this.branchInstrumentor = new BranchInstrumentor(uri, config.isDetectCoalesce(), commentsHandler);
         this.config = ParserRunner.createConfig(config.getECMAVersion(), INCLUDE_DESCRIPTIONS_WITH_WHITESPACE, KEEP_GOING, null, false, Config.StrictMode.SLOPPY);
         this.options.setPreferSingleQuotes(true);
@@ -396,6 +398,7 @@ class SourceProcessor {
         this.includeFunctionCoverage = config.isIncludeFunction();
         this.localStorage = config.isLocalStorage();
         this.isolateBrowser = config.isolateBrowser();
+        this.sourceMap = sourceMap;
     }
 
     ParseTreeInstrumenter getInstrumenter() {
@@ -433,20 +436,23 @@ class SourceProcessor {
 
     protected String processSourceWithoutHeader(String sourceURI, String source) {
         String instrumentedSource = instrumentSource(sourceURI, source);
+        StringBuilder jsLineInitialization = new StringBuilder();
+        for (String file : sourceMap.getOriginalSourceFiles()) {
+            jsLineInitialization.append(getJsLineInitialization(file, sourceMap.getValidLines(file)));
+        }
 
-        String jsLineInitialization = getJsLineInitialization(uri, instrumenter.getValidLines());
         if (commentsHandler.getJsCoverageIgnoreComments().size() > 0)
-            jsLineInitialization += format("_$jscoverage['%s'].conditionals = [];\n", uri);
+            jsLineInitialization.append(format("_$jscoverage['%s'].conditionals = [];\n", uri));
 
         if (includeFunctionCoverage)
-            jsLineInitialization += getJsFunctionInitialization(uri, instrumenter.getNumFunctions());
+            jsLineInitialization.append(getJsFunctionInitialization(uri, instrumenter.getNumFunctions()));
 
         if (includeBranchCoverage)
-            jsLineInitialization += branchInstrumentor.getJsLineInitialization();
+            jsLineInitialization.append(branchInstrumentor.getJsLineInitialization());
 
         String jsConditionals = getJsConditionals(uri, commentsHandler.getJsCoverageIgnoreComments());
 
-        return jsLineInitialization + instrumentedSource + jsConditionals;
+        return jsLineInitialization.toString() + instrumentedSource + jsConditionals;
     }
 
     protected String instrumentSource() {

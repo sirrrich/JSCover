@@ -393,7 +393,7 @@ public class LCovGenerator {
 
     String generateRecord(FileData coverageData, String sourceDirectory) {
         StringBuilder lcov = new StringBuilder();
-        lcov.append(format(source, sourceDirectory.replaceAll("\\\\","/") + coverageData.getUri()));
+        lcov.append(format(source, sourceDirectory.replaceAll("\\\\","/") + "/" +  coverageData.getUri()));
         processFunctions(coverageData, lcov);
         processBranches(coverageData, lcov);
         processLines(coverageData, lcov);

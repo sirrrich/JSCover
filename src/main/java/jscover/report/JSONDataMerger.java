@@ -452,7 +452,7 @@ public class JSONDataMerger {
     }
 
     private Integer getIntOrNull(Object value) {
-        return value == null ? null : ((Double)value).intValue();
+        return value == null || value instanceof String ? null : ((Double)value).intValue();
     }
 
     String toJSON(SortedMap<String, FileData> map) {
